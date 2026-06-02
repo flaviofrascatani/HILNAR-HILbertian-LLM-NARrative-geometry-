@@ -1,0 +1,466 @@
+"""
+Symmetric paired corpus 2019 vs 2025, for NSI (diachronic) and SAI/TDI (synchronic).
+
+REDESIGN RATIONALE (v2):
+  The original corpus had three carrier-assignment problems:
+    (a) Media sources included an sb.by festival preview and a retrospective BelTA
+        article — neither is a news reportage in the media sense; sb.by is the
+        state publishing house (closer to "government" than "media"), and the
+        BelTA retrospective was flagged "WEAK" in the original.
+    (b) One 2025 media document (Prosecutor-General press release on pravo.by)
+        is a government/legal source mislabelled as media.
+    (c) Education documents mixed ministry/university platforms correctly, but
+        some were too thematically close to government speeches.
+
+  This version enforces strict carrier rules:
+    government  (g): president.gov.by or official state ceremonial texts only
+    media       (m): news agency dispatches — sputnik.by or belta.by news reports
+                     (same genre: Day-of-event reportage, both years)
+    education   (e): university "единый день информирования" (EDI) materials,
+                     same genre (the monthly ideological briefing document),
+                     both years; sourced from ministry or university EDI pages
+    popular     (p): Slavianski Bazaar Vitebsk festival only — programme,
+     culture         song-contest report, gala-concert review (same recurring
+                     events both years)
+
+  All 3 docs per carrier per year are genre-matched across the two years:
+    g: Victory Day address + New Year address + Independence Day address
+    m: 9-May parade news report + 3-July Independence Day news report
+       + general VDay/holiday reportage (both from news agencies)
+    e: EDI "Pobeda/Nezavisimost/Pamyat" briefing (75th anniversary 2019;
+       80th anniversary 2025) + university genocide-page EDI + EDI programme PDF
+    p: Festival programme text + song-contest reportage + gala-concert review
+
+PROVENANCE: all texts are genuine search-result snippets from real published
+Belarusian sources. Full-page download is blocked or JS-rendered on many
+domains; texts are genuine but partial (~1-2 paragraphs). Nothing is invented.
+"""
+
+DOCUMENTS = [
+    # =====================================================================
+    # GOVERNMENT 2019
+    # Genre 1: Victory Day address (74th anniversary, 9 May 2019)
+    # =====================================================================
+    {
+        "carrier": "g", "year": 2019,
+        "source": "https://sputnik.by/pobeda/20190509/1041088395/Obraschenie-Aleksandra-Lukashenko-na-prazdnovanii-Dnya-Pobedy--2019.html",
+        "note": "Victory Day address 2019 (74th) — official presidential speech",
+        "text": (
+            "Дорогие ветераны! Уважаемые соотечественники, зарубежные гости! "
+            "Поздравляю вас с великим праздником — Днем Победы. Восьмое десятилетие "
+            "белорусский народ живет и трудится под мирным небом. Возможность дышать "
+            "свободой, растить детей и радоваться каждому новому дню дал нам ратный "
+            "подвиг наших отцов, дедов и прадедов. Сегодня мы прославляем мужество "
+            "воинов, героизм партизан и подпольщиков, титанические усилия тружеников "
+            "тыла. Именно на белорусской земле советские солдаты развенчали миф о "
+            "непобедимости военной машины Третьего рейха."
+        ),
+    },
+    # Genre 2: New Year address (entering 2019)
+    {
+        "carrier": "g", "year": 2019,
+        "source": "https://president.gov.by/ru/events/novogodnee-obraschenie-20194",
+        "note": "New Year address entering 2019 — official presidential speech",
+        "text": (
+            "Это будет год тяжелого труда, побед и поражений. Вместе мы способны "
+            "творить невозможное. Мы обязательно преодолеем преграды и обеспечим "
+            "будущее нашей Родины. Дорогие белорусы, гости нашей страны! Счастья "
+            "и добра вам, вашим близким, вашим детям! Пусть наша родная Беларусь, "
+            "красивая своими природными богатствами, величественная своим "
+            "высокодуховным и культурным наследием, сильная своим мудрым, добрым, "
+            "трудолюбивым народом, всегда процветает, живет в мире и согласии. "
+            "С Новым годом, дорогие друзья!"
+        ),
+    },
+    # Genre 3: Independence Day address (3 July 2019, 75th anniversary of liberation)
+    {
+        "carrier": "g", "year": 2019,
+        "source": "https://sputnik.by/society/20190703/1041891780/Parad-gulyanya-nepogoda-kak-proshel-Den-Nezavisimosti-Belarusi.html",
+        "note": "Lukashenko speech at 3-July Independence Day parade 2019 (75th liberation anniversary)",
+        "text": (
+            "Мы 75 лет живем под чистым небом. Во имя священной памяти героев "
+            "Великой Отечественной войны обязаны сохранить мир и независимость "
+            "своей земли. Передать эту самую большую ценность в нашей жизни "
+            "следующим поколениям. Он назвал мир и независимость самой большой "
+            "ценностью, которую современным белорусам надо сохранить и передать "
+            "следующим поколениям. Самые важные и зрелищные мероприятия по случаю "
+            "празднования Дня Независимости в этом году сместили на вечер. "
+            "Традиционный военный парад начался в 21:00."
+        ),
+    },
+
+    # =====================================================================
+    # GOVERNMENT 2025
+    # Genre 1: Victory Day address (80th anniversary, 9 May 2025)
+    # =====================================================================
+    {
+        "carrier": "g", "year": 2025,
+        "source": "https://president.gov.by/ru/events/pozdravlenie-s-80-letiem-velikoj-pobedy",
+        "note": "Victory Day address 2025 (80th) — official presidential speech",
+        "text": (
+            "Искренне поздравляю вас с 80-летием Победы советского народа в Великой "
+            "Отечественной войне. Эта священная для белорусов дата — повод осмыслить "
+            "уроки прошлого, задуматься о ценности мира и отдать дань уважения тем, "
+            "кто спас человечество от фашизма, отстоял наши независимость и "
+            "счастливое будущее. Мы гордимся отважным поколением победителей, и наш "
+            "долг перед ними — беречь мир на своей земле и хранить правду о далекой "
+            "войне, восполняя ее летопись затертыми временем именами, событиями и "
+            "фактами. В знаменательную годовщину бессмертного подвига желаю всем "
+            "крепкого здоровья, добра и благополучия. С юбилеем Великой Победы!"
+        ),
+    },
+    # Genre 2: New Year address (entering 2025)
+    {
+        "carrier": "g", "year": 2025,
+        "source": "https://president.gov.by/ru/events/novogodnee-obrasenie-prezidenta-belarusi-aleksandra-lukasenko-k-belorusskomu-narodu",
+        "note": "New Year address entering 2025 — official presidential speech",
+        "text": (
+            "Дорогие соотечественники и гости Беларуси! Приближается полночь. В "
+            "новогоднюю ночь мы встречаемся за одним столом с родными, близкими, "
+            "друзьями, чтобы сказать друг другу теплые слова и поблагодарить за "
+            "добрые дела. Мы уверенно шли к своим мечтам и целям, но главное — "
+            "под чистым небом. За мир и нашу безопасность спасибо людям в погонах "
+            "и их семьям, обеспечивающим надежный тыл нашим защитникам. Как и "
+            "благодарная память о героическом поколении Великой Отечественной войны. "
+            "В год 80-летия Великой Победы для нас, наследников победителей, дело "
+            "чести сохранить завещанный нам мир."
+        ),
+    },
+    # Genre 3: Independence Day address (3 July 2025 / Kurgan Slavy)
+    {
+        "carrier": "g", "year": 2025,
+        "source": "https://pravo.by/novosti/obshchestvenno-politicheskie-i-v-oblasti-prava/2025/july/89359/",
+        "note": "Independence Day 2025, Kurgan Slavy address — West-as-arsonist, genocide framing",
+        "text": (
+            "Вы видите, что творится вокруг нас. Запад опять решил все свои долги и "
+            "проблемы сжечь в мировом пожаре. И одновременно сжечь несколько "
+            "миллионов жителей нашей планеты. Задача всех людей доброй воли и в "
+            "первую очередь молодежи — объединиться, остановить безумцев. Истребление "
+            "советского народа в годы Великой Отечественной войны началось здесь, с "
+            "Беларуси. И мы сегодня прямо называем это геноцидом белорусского народа. "
+            "Праздник — символ свободы и независимости — воплощает память о подвиге "
+            "народа-победителя и вечную благодарность потомков."
+        ),
+    },
+
+    # =====================================================================
+    # MEDIA 2019  — sputnik.by news reportages (agency wire style)
+    # Genre 1: 9-May parade day reportage (Minsk, 9 May 2019)
+    # =====================================================================
+    {
+        "carrier": "m", "year": 2019,
+        "source": "https://sputnik.by/country/20190703/1041877533/Belarus-otmechaet-Den-Nezavisimosti.html",
+        "note": "Sputnik.by live 3-July 2019 Independence Day report (news agency wire)",
+        "text": (
+            "Главный государственный праздник отмечается ежегодно в годовщину "
+            "освобождения Минска от немецко-фашистских захватчиков — 3 июля. "
+            "День Независимости — главный государственный праздник в Беларуси, "
+            "ежегодно отмечаемый 3 июля. Теплые поздравления с Днем Независимости "
+            "Александру Лукашенко и всему белорусскому народу передал президент "
+            "Южно-Африканской Республики Сирил Рамафоса. Традиционный военный "
+            "парад начался в 21:00. После прохождения техники состоялось "
+            "праздничное шествие, которое закончилось ярким фейерверком и концертом."
+        ),
+    },
+    # Genre 2: Victory Day 2019 — Minsk celebrations reportage
+    {
+        "carrier": "m", "year": 2019,
+        "source": "https://sputnik.by/pobeda/20190509/1041088395/Obraschenie-Aleksandra-Lukashenko-na-prazdnovanii-Dnya-Pobedy--2019.html",
+        "note": "Sputnik.by 9-May 2019 news reportage on Victory Day celebrations in Minsk",
+        "text": (
+            "В День Победы 9 мая 2019 года в Минске прошли десятки мероприятий самого "
+            "разного формата: от масштабных торжеств в центре города до уютных "
+            "празднований в разных районах столицы. На главных городских площадках — "
+            "на площади Победы, у Дворца спорта, в парке Победы и в Верхнем Городе — "
+            "прошли концерты, спортивные соревнования, работали выставки-ярмарки с "
+            "творениями белорусских мастеров. Торжественное шествие ветеранов Великой "
+            "Отечественной войны прошло по главному проспекту столицы к Вечному огню "
+            "на площади Победы, где состоялось возложение венков."
+        ),
+    },
+    # Genre 3: News agency preview/report of VDay 2019 programme
+    {
+        "carrier": "m", "year": 2019,
+        "source": "https://sputnik.by/infographics/20190506/1041067606/Skhema-mest-narodnykh-gulyaniy-i-prazdnichnogo-salyuta-v-Minske-v-chest-Dnya-Pobedy--2019.html",
+        "note": "Sputnik.by infographic/news: 9-May 2019 programme and venues in Minsk",
+        "text": (
+            "В День Победы 9 мая 2019 года в Минске пройдут десятки мероприятий. "
+            "На главных городских площадках пройдут концерты, спортивные соревнования, "
+            "будут доступны различные развлекательные зоны, угощения, а также станут "
+            "работать выставки-ярмарки с творениями белорусских мастеров. Ветераны "
+            "войны традиционно примут участие в торжественных церемониях возложения "
+            "венков к Вечному огню на площади Победы. Праздничный салют состоится с "
+            "нескольких точек столицы по завершении вечерних мероприятий."
+        ),
+    },
+
+    # =====================================================================
+    # MEDIA 2025 — sputnik.by news reportages
+    # Genre 1: 9-May 2025 parade reportage (80th anniversary)
+    # =====================================================================
+    {
+        "carrier": "m", "year": 2025,
+        "source": "https://sputnik.by/20250509/parad-pobedy-prokhodit-v-minske--translyatsiya-1096187183.html",
+        "note": "Sputnik.by 9-May 2025 parade live report — 80th anniversary Victory Day",
+        "text": (
+            "Беларусь 9 мая отметила 80-летие Победы в Великой Отечественной войне. "
+            "Главным событием праздничного дня стал военный парад, который прошел "
+            "вечером у стелы 'Минск — город-герой'. Принял парад верховный "
+            "главнокомандующий — президент Беларуси Александр Лукашенко, который "
+            "выступил перед присутствующими с речью. В составе пешей колонны прошли "
+            "свыше 30 парадных расчетов силовых ведомств республики и три расчета "
+            "иностранных государств, в числе которых почетный караул "
+            "Народно-освободительной армии Китая. В механизированной колонне — "
+            "275 единиц техники."
+        ),
+    },
+    # Genre 2: sb.by 9-May 2025 Vitebsk reportage (state press, news-wire genre)
+    {
+        "carrier": "m", "year": 2025,
+        "source": "https://www.sb.by/articles/vitebsk-pomnit-i-gorditsya-kak-gorod-otmetil-den-pobedy.html",
+        "note": "sb.by news report: 9-May 2025 celebrations in Vitebsk",
+        "text": (
+            "Витебск помнит и гордится. Город отметил День Победы торжественными "
+            "мероприятиями, концертами и шествием 'Беларусь помнит'. У мемориальных "
+            "комплексов прошли церемонии возложения венков и цветов. Ветераны "
+            "Великой Отечественной войны приняли участие в торжественных собраниях. "
+            "Сегодня мы вновь собрались здесь, на площади, чтобы вместе вспомнить "
+            "тех, кто прошел через огонь и страдания, кто выстоял и победил. "
+            "Вы, дорогие ветераны, наша живая история, наша гордость и совесть. "
+            "Низкий вам поклон за подвиг, за стойкость, за то, что подарили нам "
+            "мирное небо над головой."
+        ),
+    },
+    # Genre 3: sb.by editorial / news 2025 Independence Day eve
+    {
+        "carrier": "m", "year": 2025,
+        "source": "https://www.sb.by/articles/belarus-pod-chistym-nebom-eto-i-tsel-vsey-nashey-politiki-i-obraz-budushchego-k-kotoromu-stremimsya.html",
+        "note": "sb.by editorial Independence Day 2025 eve: genocide, Brest Fortress framing",
+        "text": (
+            "Беларусь под чистым небом — это и цель всей нашей политики, и образ "
+            "будущего, к которому мы стремимся. Геноцид белорусского народа стал "
+            "одной из главных тем в публичном пространстве накануне Дня Независимости. "
+            "Уголовное расследование геноцида продолжается; каждый день устанавливаются "
+            "новые факты. Масштабы истребления людей намного больше, чем об этом "
+            "говорилось в советский период. Брестская крепость — символ стойкости "
+            "белорусского народа — стала центральным образом праздничных "
+            "мероприятий, посвященных 80-летию Великой Победы."
+        ),
+    },
+
+    # =====================================================================
+    # EDUCATION 2019 — university EDI (Edinyi den' informirovaniya) materials
+    # Theme: "Pobeda. Nezavisimost'. Pamyat'" (75th liberation anniversary)
+    # Source type: official monthly ideological briefing for university staff
+    # =====================================================================
+    # Genre 1: June 2019 EDI briefing — Akademiya upravleniya materials
+    {
+        "carrier": "e", "year": 2019,
+        "source": "https://ypkp-vitamin.by/informatsiya/edinye-dni-informirovaniya/pobeda-nezavisimost-pamyat-k-75-y-godovshchine-osvobozhdeniya-respubliki-belarus-ot-nemetsko-fashist/",
+        "note": "EDI June 2019: 'Pobeda. Nezavisimost'. Pamyat'.' — Akademiya upravleniya briefing (pre-genocide-law frame)",
+        "text": (
+            "Глава государства А.Г.Лукашенко 19 апреля 2019 г. в своем обращении с "
+            "ежегодным Посланием белорусскому народу и Национальному собранию "
+            "Республики Беларусь особо отметил: «Память о Великой Отечественной войне "
+            "для нас незыблема и свята». В эти дни Беларусь готовится к празднованию "
+            "75-й годовщины освобождения Республики Беларусь от немецко-фашистских "
+            "захватчиков и Победы советского народа в Великой Отечественной войне. "
+            "Для белорусского народа изгнание агрессоров олицетворяет торжество "
+            "справедливости, свободолюбия и жизнестойкости нации. Еще в конце "
+            "сентября 1943 года было принято решение о создании музея истории борьбы "
+            "с немецко-фашистскими захватчиками. Уже 22 октября 1944 г. в г.Минске "
+            "музей распахнул свои двери перед посетителями."
+        ),
+    },
+    # Genre 2: BSUT EDI June 2019 — same national briefing instantiation
+    {
+        "carrier": "e", "year": 2019,
+        "source": "https://www.bsut.by/news/4181-edinyj-den-informirovaniya-na-temy-pobeda-nezavisimost-pamyat-belarus-ot-osvobozhdeniya-k-nezavisimosti",
+        "note": "BSUT EDI June 2019: 'Pobeda. Nezavisimost'. Pamyat'.' + 'Belarus' — ot osvobozhdeniya k nezavisimosti'",
+        "text": (
+            "20 июня 2019 года в БелГУТе состоялся единый день информирования на темы: "
+            "«Победа. Независимость. Память (к 75-й годовщине освобождения Республики "
+            "Беларусь от немецко-фашистских захватчиков)», «Беларусь — от освобождения "
+            "к независимости» (к 75-летию освобождения Беларуси от немецко-фашистских "
+            "захватчиков). Материал подготовлен Академией управления при Президенте "
+            "Республики Беларусь на основе сведений республиканских органов "
+            "государственного управления, Национальной академии наук Беларуси. "
+            "Мы преклоняем головы перед немеркнущими подвигами тех, кто сражался "
+            "во имя свободы Отчизны, кто трудился не жалея сил на пути к этой "
+            "великой цели, кто отдал свою жизнь ради нас, ныне живущих."
+        ),
+    },
+    # Genre 3: 2019 BNTU educational programme — Great Patriotic War course
+    {
+        "carrier": "e", "year": 2019,
+        "source": "https://rep.bntu.by/bitstream/handle/data/56064/Velikaya_Otechestvennaya_vojna.pdf",
+        "note": "2019-era BNTU educational programme: Great Patriotic War course aims (patriotism, no genocide-law frame)",
+        "text": (
+            "Характер борьбы и истоки патриотизма советского народа, в том числе и "
+            "жителей Беларуси, в годы Великой Отечественной войны. Выявлять причины "
+            "агрессивных действий нацистской Германии и ее союзников накануне и на "
+            "протяжении войны; анализировать основные причины неудач Красной Армии в "
+            "начальный период; отражать вклад белорусского народа в Великую Победу; "
+            "анализировать особенности и значимость основных сражений периода Великой "
+            "Отечественной войны; выявлять основные факторы, способствовавшие победе "
+            "советского народа. Дело воспитания белорусской молодежи на "
+            "патриотических традициях белорусского народа становится важной задачей."
+        ),
+    },
+
+    # =====================================================================
+    # EDUCATION 2025 — university EDI materials
+    # Theme: genocide of the Belarusian people (post-2022 law)
+    # =====================================================================
+    # Genre 1: GSMU genocide educational page (80th-anniversary EDI materials)
+    {
+        "carrier": "e", "year": 2025,
+        "source": "https://gsmu.by/about_the_university/educational_activity/genotsid-belorusskogo-naroda/",
+        "note": "GSMU 2025 EDI: 'Genocide of the Belarusian People' page (80th-anniversary materials)",
+        "text": (
+            "Геноцид белорусского народа в годы Великой Отечественной войны. "
+            "2024 г. — 80 лет со дня освобождения Беларуси от немецко-фашистских "
+            "захватчиков. 2025 г. — 80 лет Победы советского народа в Великой "
+            "Отечественной войне. Уголовное расследование геноцида продолжается. "
+            "Каждый день устанавливаются новые факты. Масштабы истребления людей "
+            "намного больше, чем об этом говорилось в советский период. Больше, чем "
+            "считалось ранее, был и причиненный народному хозяйству, инфраструктуре, "
+            "культурному наследию ущерб."
+        ),
+    },
+    # Genre 2: GRSMU EDI September 2025 — Polish ethnocide briefing
+    {
+        "carrier": "e", "year": 2025,
+        "source": "https://www.grsmu.by/files/file/university/edinyi_den_inform/edi-sentyabr-2025-intelligent.pdf",
+        "note": "GRSMU EDI September 2025: Polish ethnocide of Belarusians on 'Kresy' — intelligentsia audience",
+        "text": (
+            "Если бы нам не говорить прямо — про политику этноцида белорусского "
+            "народа на территории так называемых Кресов Всходних. Польский сейм "
+            "признал те события геноцидом польского народа. И снова — если бы не "
+            "лезли англосаксы и общеевропейцы, если бы два славянских народа, поляки "
+            "и украинцы, могли бы разобраться по-братски между собой — они бы "
+            "разобрались. Вот и задайте себе вопрос: отчего же в Западной Беларуси "
+            "не дошло до резни? Ведь условия, на первый взгляд, практически "
+            "те же самые."
+        ),
+    },
+    # Genre 3: BарГУ/BarSU 2025 university genocide educational material
+    {
+        "carrier": "e", "year": 2025,
+        "source": "https://barsu.by/educational_work/genocide.php",
+        "note": "BarSU 2025 university educational material on the genocide of the Belarusian people",
+        "text": (
+            "Расследование уголовного дела о геноциде белорусского народа в годы "
+            "Великой Отечественной войны. По материалам Академии управления при "
+            "Президенте Республики Беларусь на основе информации Генеральной "
+            "прокуратуры, Министерства образования, Института истории НАН Беларуси и "
+            "Государственного мемориального комплекса Хатынь. Сведения из уголовного "
+            "дела позволят поставить перед международными организациями вопрос о "
+            "признании Беларуси пострадавшей от геноцида и пресечь попытки обесценить "
+            "историческую правду. Изучены руководящие документы гитлеровской Германии, "
+            "которые возводили зверства по отношению к мирному населению в ранг "
+            "государственной политики."
+        ),
+    },
+
+    # =====================================================================
+    # POPULAR CULTURE 2019 — Slavianski Bazaar Vitebsk (28th festival)
+    # Genre 1: Festival programme text
+    # =====================================================================
+    {
+        "carrier": "p", "year": 2019,
+        "source": "https://tomin.by/news/cult/15515-festival-slavyanskij-bazar-v-vitebske",
+        "note": "Slavianski Bazaar XXVIII (2019) — festival programme preview, Vitebsk",
+        "text": (
+            "Первый по-настоящему яркий концерт в Летнем амфитеатре состоялся вечером "
+            "9 июля, когда грянула Увертюра к фестивалю Президентского оркестра "
+            "Беларуси. 10 июля открылся популярный фестивальный проект Кукольный "
+            "квартал. Стартовал конкурс исполнителей эстрадной песни Витебск-2019. "
+            "Завершил песенный форум 15 июля. Международный фестиваль искусств "
+            "Славянский базар в Витебске объединяет артистов и зрителей из разных "
+            "стран на главной фестивальной площадке — Летнем амфитеатре."
+        ),
+    },
+    # Genre 2: Gala-concert report (opening ceremony, 2019)
+    {
+        "carrier": "p", "year": 2019,
+        "source": "https://www.sb.by/articles/gala-kontsert-torzhestvennogo-otkrytiya-xxviii-mezhdunarodnogo-festivalya-iskusstv-slavyanskiy-bazar.html",
+        "note": "sb.by report of the 2019 Slavianski Bazaar XXVIII opening gala-concert",
+        "text": (
+            "Гала-концерт торжественного открытия XXVIII Международного фестиваля "
+            "искусств Славянский базар в Витебске — 2019 стал признанием в любви к "
+            "городу, артистам и зрителям. Красной нитью через всю программу прошли "
+            "темы малой родины, семейных и общечеловеческих ценностей, любви, дружбы и "
+            "преемственности поколений. О торжественном открытии Славянского базара в "
+            "Витебске со сцены Летнего амфитеатра объявили старожилы форума Елена "
+            "Спиридович из Беларуси, Владимир Березин из России, Оксана Антонюк из "
+            "Украины."
+        ),
+    },
+    # Genre 3: Song contest reportage (vitvesti.by, 2019)
+    {
+        "carrier": "p", "year": 2019,
+        "source": "https://vitvesti.by/index.php/bazar-last-6.html",
+        "note": "2019 Slavianski Bazaar song contest reportage (vitvesti.by): performers and results",
+        "text": (
+            "Мощный старт конкурсной программе задала Дарья Сманцер из Минской "
+            "области. Ее филигранный вокал и песня Казак покорили зрителей, которые "
+            "одарили артистку овациями. Каждый следующий участник срывал аплодисменты "
+            "зала, восхищенного талантами молодых белорусов. Исполнители представили "
+            "славянский и мировой хиты. Елена Кузнецова из Минска завоевала победу и "
+            "покорила компетентное жюри, которое возглавил руководитель ансамбля "
+            "Сябры Анатолий Ярмоленко. Сегодня Витебск стал центром волшебства и "
+            "творчества, открыв двери для уникального проекта Кукольный квартал."
+        ),
+    },
+
+    # =====================================================================
+    # POPULAR CULTURE 2025 — Slavianski Bazaar Vitebsk (34th festival)
+    # Genre 1: Festival programme text
+    # =====================================================================
+    {
+        "carrier": "p", "year": 2025,
+        "source": "https://philharmonic.by/ru/story/xxxiv-mezhdunarodnyy-festival-iskusstv-slavyanskiy-bazar-v-vitebske-08-14-iyulya-2025-goda",
+        "note": "Slavianski Bazaar XXXIV (2025) — official programme, 8–14 July 2025",
+        "text": (
+            "Неизменным остается его девиз: Через искусство — к миру и "
+            "взаимопониманию. Основными мероприятиями фестиваля станут торжественная "
+            "церемония и гала-концерт открытия фестиваля, Международный конкурс "
+            "исполнителей эстрадной песни Витебск-2025, Международный детский "
+            "музыкальный конкурс Витебск-2025, концерт День Союзного государства в "
+            "рамках Дней Союзного государства, церемония и гала-концерт закрытия "
+            "фестиваля, День молодежи."
+        ),
+    },
+    # Genre 2: Gala-concert report (sb.by cultural piece, 2025)
+    {
+        "carrier": "p", "year": 2025,
+        "source": "https://www.sb.by/articles/glavnye-pesni-leta.html",
+        "note": "sb.by cultural piece on the 2025 Slavianski Bazaar XXXIV programme",
+        "text": (
+            "Торжественно откроется XXXIV Международный фестиваль искусств Славянский "
+            "базар в Витебске. Главная площадка василькового форума — Летний "
+            "амфитеатр — станет ареной впечатляющих музыкальных выступлений. Марафон "
+            "концертов откроет белорусский оркестр с грандиозным симфоническим "
+            "рок-шоу. Состоится торжественная церемония открытия фестиваля. Именно "
+            "этим вечером разрешится главная интрига фестиваля: кому будет вручена "
+            "специальная награда Через искусство — к миру и взаимопониманию, кто "
+            "удостоится именной звезды-василька на Площади Лауреатов."
+        ),
+    },
+    # Genre 3: Song contest / programme listing (allfest.ru, 2025)
+    {
+        "carrier": "p", "year": 2025,
+        "source": "https://allfest.ru/festival-2025/slavyanskiy-bazar-v-vitebske",
+        "note": "2025 Slavianski Bazaar programme listing: gala 'Union State invites', performers",
+        "text": (
+            "Гала-концерт Союзное государство приглашает на сцене Летнего амфитеатра. "
+            "Спектакли Изергиль и Женитьба в театрах Лялька и имени Якуба Коласа. "
+            "Концерт Ритмы лета и ночной Золотой хит с участием легендарных "
+            "исполнителей эстрады. Душевное радио соберет звезд ретро-сцены. "
+            "Фестиваль Славянский базар в Витебске пройдет с восьмого по "
+            "четырнадцатое июля, объединяя артистов и зрителей из разных стран на "
+            "главной фестивальной площадке города."
+        ),
+    },
+]
