@@ -1,31 +1,6 @@
 """
 HILNAR — Hilbertian-LLM Narrative Geometry — PROTOTIPE FOR THE THESIS (BETA VERSION) NOT COMPLETE HILNAR, 
 NO WAVE PROJECTION (LOOK AT HILNAR_WAVE.PY FOR THE WAVE PROJECTION. THIS LATTER (WAVE) HOWEVER HAS NOT BEEN IMPLEMENTED FOR COMPUTING POWER REQUIRED. ONLY THIS HILNAR.PY PROTOTYPE HAS BEEN IMPLEMENTED). 
-
-Implements the four phases described in the thesis:
-
-  1. Tokenizing phase   : carrier split, exact + quasi dedup (hash + Jaccard
-                          shingles), WordPiece subwording, logged frequency.
-  2. Transformer phase  : two interchangeable embedding backends
-                          - "e5"      : multilingual-E5 contextual mean-pooling
-                                        (faithful to the thesis; needs the HF
-                                        model, so it is NOT runnable offline)
-                          - "cooc"    : PPMI co-occurrence + SVD static
-                                        embeddings, trained PER (sector, year)
-                                        slice -> genuinely separate spaces ->
-                                        the Procrustes machinery is meaningful.
-                                        Runs fully offline. DEFAULT.
-  3. Hilbert projection : truncated-SVD reduction with a SHARED basis taken
-                          from the standard space, then orthogonal Procrustes
-                          alignment of every slice to the standard space.
-  4. Comparative phase  : NSI (diachronic) and SAI/TDI (synchronic).
-
-Point projection only (the thesis defers the wave / quantum-probability
-variant to future work for storage/compute reasons).
-
-Author-side note: anisotropy correction (global mean-centring) is applied
-before cosine-based quantities — see ENGINEERING_NOTES in the accompanying
-report for why this is necessary and is an addition to the thesis text.
 """
 
 from __future__ import annotations
@@ -52,9 +27,8 @@ CARRIERS = ["g", "m", "e", "p"]
 CARRIER_NAMES = {"g": "government", "m": "media", "e": "education", "p": "popular culture"}
 
 
-# --------------------------------------------------------------------------- #
-# Phase 1 — Tokenizing
-# --------------------------------------------------------------------------- #
+#TOKENIZIGN
+
 def _normalize(text: str) -> str:
     text = text.lower().strip()
     text = re.sub(r"\s+", " ", text)
@@ -121,11 +95,9 @@ def tokenize_docs(docs: list[dict], tok: Tokenizer) -> list[dict]:
     return docs
 
 
-# --------------------------------------------------------------------------- #
-# Phase 2 — Embedding backends. Each returns, per (carrier, year) slice:
-#   vectors : dict[subword -> np.ndarray]   (one vector per subword type)
-#   freqs   : dict[subword -> int]          (raw subword count in the slice)
-# --------------------------------------------------------------------------- #
+
+# EMBEDDING 
+
 @dataclass
 class Slice:
     carrier: str
@@ -169,7 +141,7 @@ def backend_cooc(docs: list[dict], vocab: list[str], dim: int = 50,
                 for j in range(lo, hi):
                     if j != i:
                         co[ci, idxs[j]] += 1.0
-        # symmetric PPMI
+        # SYMMETRIC PPMI
         co = (co + co.T) / 2.0
         total = co.sum()
         if total == 0:
@@ -221,9 +193,9 @@ def backend_e5(docs: list[dict], vocab: list[str], **_) -> dict[tuple, Slice]:
 BACKENDS: dict[str, Callable] = {"cooc": backend_cooc, "e5": backend_e5}
 
 
-# --------------------------------------------------------------------------- #
-# Phase 3 — Hilbert projection: shared-basis SVD reduction + Procrustes
-# --------------------------------------------------------------------------- #
+
+# PROJECTION
+
 def _matrix(slice_: Slice, vocab: list[str]) -> tuple[np.ndarray, list[str]]:
     words = [w for w in vocab if w in slice_.vectors]
     M = np.vstack([slice_.vectors[w] for w in words])
@@ -292,9 +264,7 @@ def project_and_align(slices: dict[tuple, Slice], vocab: list[str],
     return reduced
 
 
-# --------------------------------------------------------------------------- #
-# Phase 4 — Comparative: NSI, SAI, TDI
-# --------------------------------------------------------------------------- #
+# NSI SAI TDI
 def _cos(a: np.ndarray, b: np.ndarray) -> float:
     na, nb = np.linalg.norm(a), np.linalg.norm(b)
     if na == 0 or nb == 0:
@@ -398,9 +368,7 @@ def cluster_shifts(reduced, slices, carrier, t, tp, n_clusters=4, min_freq=2,
     return out
 
 
-# --------------------------------------------------------------------------- #
-# Orchestration
-# --------------------------------------------------------------------------- #
+# THE REST
 def run(docs: list[dict], backend: str = "cooc", dim: int = 50,
         standard_carrier: str = "g", standard_year: int | None = None,
         vocab_min_count: int = 2, basis_source: str = "pooled",
@@ -449,9 +417,7 @@ def run(docs: list[dict], backend: str = "cooc", dim: int = 50,
     }
 
 
-# --------------------------------------------------------------------------- #
-# Significance + robustness utilities (added in review revision)
-# --------------------------------------------------------------------------- #
+#ALAS SIGNIFICANCE
 def _sai_single_year(docs, year, sector, dim, mincount, standard_carrier="g"):
     """Compute SAI(sector vs government) within one year for a given doc set."""
     from collections import Counter as _C
