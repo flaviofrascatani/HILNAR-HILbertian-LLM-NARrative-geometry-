@@ -1,37 +1,5 @@
 """
-Symmetric paired corpus 2019 vs 2025, for NSI (diachronic) and SAI/TDI (synchronic).
-
-REDESIGN RATIONALE (v2):
-  The original corpus had three carrier-assignment problems:
-    (a) Media sources included an sb.by festival preview and a retrospective BelTA
-        article — neither is a news reportage in the media sense; sb.by is the
-        state publishing house (closer to "government" than "media"), and the
-        BelTA retrospective was flagged "WEAK" in the original.
-    (b) One 2025 media document (Prosecutor-General press release on pravo.by)
-        is a government/legal source mislabelled as media.
-    (c) Education documents mixed ministry/university platforms correctly, but
-        some were too thematically close to government speeches.
-
-  This version enforces strict carrier rules:
-    government  (g): president.gov.by or official state ceremonial texts only
-    media       (m): news agency dispatches — sputnik.by or belta.by news reports
-                     (same genre: Day-of-event reportage, both years)
-    education   (e): university "единый день информирования" (EDI) materials,
-                     same genre (the monthly ideological briefing document),
-                     both years; sourced from ministry or university EDI pages
-    popular     (p): Slavianski Bazaar Vitebsk festival only — programme,
-     culture         song-contest report, gala-concert review (same recurring
-                     events both years)
-
-  All 3 docs per carrier per year are genre-matched across the two years:
-    g: Victory Day address + New Year address + Independence Day address
-    m: 9-May parade news report + 3-July Independence Day news report
-       + general VDay/holiday reportage (both from news agencies)
-    e: EDI "Pobeda/Nezavisimost/Pamyat" briefing (75th anniversary 2019;
-       80th anniversary 2025) + university genocide-page EDI + EDI programme PDF
-    p: Festival programme text + song-contest reportage + gala-concert review
-
-PROVENANCE: all texts are genuine search-result snippets from real published
+All texts are genuine search-result snippets from real published
 Belarusian sources. Full-page download is blocked or JS-rendered on many
 domains; texts are genuine but partial (~1-2 paragraphs). Nothing is invented.
 """
